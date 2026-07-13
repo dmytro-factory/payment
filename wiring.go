@@ -55,6 +55,7 @@ func WireUp(ctx context.Context, declineAmount float32, tracer stdopentracing.Tr
 
 	// Handler
 	handler := middleware.Merge(httpMiddleware...).Wrap(router)
+	handler = correlationIDMiddleware(logger, handler)
 
 	return handler, logger
 }

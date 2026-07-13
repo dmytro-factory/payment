@@ -10,6 +10,7 @@ import (
 )
 
 type correlationIDKey struct{}
+type loggerKey struct{}
 
 func getCorrelationID(r *http.Request) string {
 	cid := r.Header.Get("X-Correlation-ID")
@@ -26,6 +27,7 @@ func correlationIDMiddleware(logger log.Logger, next http.Handler) http.Handler 
 		cid := getCorrelationID(r)
 		w.Header().Set("X-Correlation-ID", cid)
 		ctx := context.WithValue(r.Context(), correlationIDKey{}, cid)
+		ctx = context.WithValue(ctx, loggerKey{}, log.With(logger, "correlationId", cid))
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
