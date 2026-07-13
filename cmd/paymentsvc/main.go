@@ -13,7 +13,7 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/microservices-demo/payment"
 	stdopentracing "github.com/opentracing/opentracing-go"
-	zipkin "github.com/openzipkin/zipkin-go-opentracing"
+	zipkin "github.com/openzipkin-contrib/zipkin-go-opentracing"
 	"golang.org/x/net/context"
 )
 
@@ -33,9 +33,10 @@ func main() {
 		// Log domain.
 		var logger log.Logger
 		{
-			logger = log.NewLogfmtLogger(os.Stderr)
-			logger = log.NewContext(logger).With("ts", log.DefaultTimestampUTC)
-			logger = log.NewContext(logger).With("caller", log.DefaultCaller)
+			logger = log.NewJSONLogger(os.Stderr)
+			logger = log.With(logger, "ts", log.DefaultTimestampUTC)
+			logger = log.With(logger, "caller", log.DefaultCaller)
+			logger = log.With(logger, "service", ServiceName)
 		}
 		// Find service local IP.
 		conn, err := net.Dial("udp", "8.8.8.8:80")
@@ -49,7 +50,7 @@ func main() {
 		if *zip == "" {
 			tracer = stdopentracing.NoopTracer{}
 		} else {
-			logger := log.NewContext(logger).With("tracer", "Zipkin")
+			logger := log.With(logger, "tracer", "Zipkin")
 			logger.Log("addr", zip)
 			collector, err := zipkin.NewHTTPCollector(
 				*zip,
